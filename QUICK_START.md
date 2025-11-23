@@ -76,3 +76,4 @@ Make sure `SESSION_SECRET` is set in `.env` with a random string
 - See `MONGODB_SETUP.md` for MongoDB setup instructions
 - Review `ENV_TEMPLATE.txt` for environment variable examples
 
+

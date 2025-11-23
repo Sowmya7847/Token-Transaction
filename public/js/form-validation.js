@@ -241,3 +241,4 @@ function showConfirmationDialog(title, message, onConfirm, onCancel) {
 // Make confirmation dialog globally available
 window.showConfirmationDialog = showConfirmationDialog;
 
+
