@@ -1,0 +1,327 @@
+<%- include('../partials/header', { title: title, user: user }) %>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="mb-0">Reports & Analytics</h1>
+        <p class="text-muted">View your transaction statistics</p>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <i class="bi bi-list-ul fs-1 mb-2"></i>
+                <h3><%= stats.totalTransactions %></h3>
+                <p class="mb-0">Total Transactions</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <i class="bi bi-arrow-down-circle fs-1 mb-2"></i>
+                <h3><%= stats.totalDeposits %></h3>
+                <p class="mb-0">Total Deposits</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body text-center">
+                <i class="bi bi-arrow-up-circle fs-1 mb-2"></i>
+                <h3><%= stats.totalWithdrawals %></h3>
+                <p class="mb-0">Total Withdrawals</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <i class="bi bi-arrow-left-right fs-1 mb-2"></i>
+                <h3><%= stats.totalTransfers %></h3>
+                <p class="mb-0">Total Transfers</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6 mb-3">
+        <div class="card bg-danger text-white">
+            <div class="card-body text-center">
+                <i class="bi bi-fire fs-1 mb-2"></i>
+                <h3><%= stats.totalBurns %></h3>
+                <p class="mb-0">Total Burns</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-3">
+        <div class="card bg-secondary text-white">
+            <div class="card-body text-center">
+                <i class="bi bi-calculator fs-1 mb-2"></i>
+                <h3 class="<%= stats.netAmount >= 0 ? 'text-success' : 'text-warning' %>">
+                    <%= stats.netAmount >= 0 ? '+' : '' %><%= stats.netAmount.toFixed(2) %>
+                </h3>
+                <p class="mb-0">Net Amount</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-8 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-graph-up"></i> Transaction Timeline</h5>
+                <div class="btn-group btn-group-sm" role="group">
+                    <button type="button" class="btn btn-outline-primary active" onclick="changeChartType('line')">Line</button>
+                    <button type="button" class="btn btn-outline-primary" onclick="changeChartType('bar')">Bar</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <canvas id="transactionChart" height="80"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Distribution</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="distributionChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Monthly Comparison</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="monthlyChart" height="60"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    const dailyData = <%- dailyData %>;
+    const dates = Object.keys(dailyData).sort();
+    const formattedDates = dates.map(date => {
+        const d = new Date(date);
+        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    });
+    
+    const deposits = dates.map(date => dailyData[date].deposits);
+    const withdrawals = dates.map(date => Math.abs(dailyData[date].withdrawals));
+    const transfers = dates.map(date => dailyData[date].transfers);
+    const burns = dates.map(date => Math.abs(dailyData[date].burns));
+
+    let transactionChart;
+    let chartType = 'line';
+
+    function changeChartType(type) {
+        chartType = type;
+        document.querySelectorAll('.btn-group button').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+        transactionChart.destroy();
+        initTransactionChart();
+    }
+
+    function initTransactionChart() {
+        const ctx = document.getElementById('transactionChart').getContext('2d');
+        transactionChart = new Chart(ctx, {
+            type: chartType,
+            data: {
+                labels: formattedDates,
+                datasets: [
+                    {
+                        label: 'Deposits',
+                        data: deposits,
+                        borderColor: 'rgb(25, 135, 84)',
+                        backgroundColor: 'rgba(25, 135, 84, 0.6)',
+                        tension: 0.4,
+                        fill: chartType === 'line'
+                    },
+                    {
+                        label: 'Withdrawals',
+                        data: withdrawals,
+                        borderColor: 'rgb(255, 193, 7)',
+                        backgroundColor: 'rgba(255, 193, 7, 0.6)',
+                        tension: 0.4,
+                        fill: chartType === 'line'
+                    },
+                    {
+                        label: 'Transfers',
+                        data: transfers,
+                        borderColor: 'rgb(13, 110, 253)',
+                        backgroundColor: 'rgba(13, 110, 253, 0.6)',
+                        tension: 0.4,
+                        fill: chartType === 'line'
+                    },
+                    {
+                        label: 'Burns',
+                        data: burns,
+                        borderColor: 'rgb(220, 53, 69)',
+                        backgroundColor: 'rgba(220, 53, 69, 0.6)',
+                        tension: 0.4,
+                        fill: chartType === 'line'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toFixed(2);
+                            }
+                        }
+                    }
+                },
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'x',
+                    intersect: false
+                }
+            }
+        });
+    }
+
+    // Distribution Pie Chart
+    const ctx2 = document.getElementById('distributionChart').getContext('2d');
+    new Chart(ctx2, {
+        type: 'doughnut',
+        data: {
+            labels: ['Deposits', 'Withdrawals', 'Transfers', 'Burns'],
+            datasets: [{
+                data: [
+                    <%= stats.totalDeposits %>,
+                    <%= stats.totalWithdrawals %>,
+                    <%= stats.totalTransfers %>,
+                    <%= stats.totalBurns %>
+                ],
+                backgroundColor: [
+                    'rgba(25, 135, 84, 0.8)',
+                    'rgba(255, 193, 7, 0.8)',
+                    'rgba(13, 110, 253, 0.8)',
+                    'rgba(220, 53, 69, 0.8)'
+                ],
+                borderColor: [
+                    'rgb(25, 135, 84)',
+                    'rgb(255, 193, 7)',
+                    'rgb(13, 110, 253)',
+                    'rgb(220, 53, 69)'
+                ],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            label += context.parsed.toFixed(2);
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Monthly Comparison Chart
+    const monthlyData = {};
+    dates.forEach(date => {
+        const month = new Date(date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        if (!monthlyData[month]) {
+            monthlyData[month] = { deposits: 0, withdrawals: 0, transfers: 0, burns: 0 };
+        }
+        monthlyData[month].deposits += dailyData[date].deposits;
+        monthlyData[month].withdrawals += Math.abs(dailyData[date].withdrawals);
+        monthlyData[month].transfers += dailyData[date].transfers;
+        monthlyData[month].burns += Math.abs(dailyData[date].burns);
+    });
+
+    const months = Object.keys(monthlyData).sort();
+    const ctx3 = document.getElementById('monthlyChart').getContext('2d');
+    new Chart(ctx3, {
+        type: 'bar',
+        data: {
+            labels: months,
+            datasets: [
+                {
+                    label: 'Deposits',
+                    data: months.map(m => monthlyData[m].deposits),
+                    backgroundColor: 'rgba(25, 135, 84, 0.8)'
+                },
+                {
+                    label: 'Withdrawals',
+                    data: months.map(m => monthlyData[m].withdrawals),
+                    backgroundColor: 'rgba(255, 193, 7, 0.8)'
+                },
+                {
+                    label: 'Transfers',
+                    data: months.map(m => monthlyData[m].transfers),
+                    backgroundColor: 'rgba(13, 110, 253, 0.8)'
+                },
+                {
+                    label: 'Burns',
+                    data: months.map(m => monthlyData[m].burns),
+                    backgroundColor: 'rgba(220, 53, 69, 0.8)'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    stacked: false
+                },
+                x: {
+                    stacked: false
+                }
+            }
+        }
+    });
+
+    // Initialize transaction chart
+    initTransactionChart();
+</script>
+

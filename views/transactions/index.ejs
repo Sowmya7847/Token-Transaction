@@ -1,0 +1,86 @@
+<%- include('../partials/header', { title: title, user: user }) %>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="mb-0">Transaction History</h1>
+        <p class="text-muted">View all your transactions</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-list-ul"></i> All Transactions</h5>
+            </div>
+            <div class="card-body">
+                <% if (transactions.length === 0) { %>
+                    <p class="text-muted text-center py-4">No transactions found</p>
+                <% } else { %>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Transaction ID</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Description</th>
+                                    <th>Date & Time</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% transactions.forEach(tx => { %>
+                                    <tr>
+                                        <td><code><%= tx.transactionId || tx.id %></code></td>
+                                        <td>
+                                            <span class="badge bg-<%= tx.type === 'deposit' || (tx.type === 'transfer' && tx.amount > 0) ? 'success' : tx.type === 'burn' ? 'danger' : 'warning' %>">
+                                                <%= tx.type %>
+                                            </span>
+                                        </td>
+                                        <td class="<%= tx.amount > 0 ? 'text-success' : 'text-danger' %> fw-bold">
+                                            <%= tx.amount > 0 ? '+' : '' %><%= tx.amount %>
+                                        </td>
+                                        <td><%= tx.description %></td>
+                                        <td><%= tx.timestamp.toLocaleString() %></td>
+                                        <td>
+                                            <span class="badge bg-<%= tx.status === 'completed' ? 'success' : 'warning' %>">
+                                                <%= tx.status %>
+                                            </span>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <% if (totalPages > 1) { %>
+                        <nav aria-label="Transaction pagination">
+                            <ul class="pagination justify-content-center">
+                                <% if (hasPrevPage) { %>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page=<%= currentPage - 1 %>">Previous</a>
+                                    </li>
+                                <% } %>
+                                <% for (let i = 1; i <= totalPages; i++) { %>
+                                    <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                                        <a class="page-link" href="?page=<%= i %>"><%= i %></a>
+                                    </li>
+                                <% } %>
+                                <% if (hasNextPage) { %>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page=<%= currentPage + 1 %>">Next</a>
+                                    </li>
+                                <% } %>
+                            </ul>
+                        </nav>
+                    <% } %>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>
+

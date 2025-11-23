@@ -1,0 +1,362 @@
+<%- include('../partials/header', { title: title, user: user }) %>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="mb-0">Dashboard</h1>
+        <p class="text-muted">Welcome back, <%= user.email %></p>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6 col-lg-3 mb-3">
+        <div class="card bg-primary text-white shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle mb-2 text-white-50">Current Balance</h6>
+                        <h2 class="card-title mb-0" id="balance"><%= (user.balance || 0).toFixed(2) %></h2>
+                        <small class="text-white-50">Tokens</small>
+                    </div>
+                    <i class="bi bi-wallet2 fs-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-3 mb-3">
+        <div class="card bg-success text-white shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle mb-2 text-white-50">Total Deposits</h6>
+                        <h2 class="card-title mb-0"><%= (stats.totalDeposits || 0).toFixed(2) %></h2>
+                        <small class="text-white-50">All time</small>
+                    </div>
+                    <i class="bi bi-arrow-down-circle fs-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-3 mb-3">
+        <div class="card bg-warning text-white shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle mb-2 text-white-50">Total Withdrawals</h6>
+                        <h2 class="card-title mb-0"><%= (stats.totalWithdrawals || 0).toFixed(2) %></h2>
+                        <small class="text-white-50">All time</small>
+                    </div>
+                    <i class="bi bi-arrow-up-circle fs-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-3 mb-3">
+        <div class="card bg-info text-white shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle mb-2 text-white-50">Total Transactions</h6>
+                        <h2 class="card-title mb-0"><%= stats.totalTransactions || 0 %></h2>
+                        <small class="text-white-50">All time</small>
+                    </div>
+                    <i class="bi bi-list-ul fs-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6 mb-3">
+        <div class="card bg-gradient shadow-sm" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+            <div class="card-body text-center">
+                <i class="bi bi-arrow-left-right fs-1 mb-2"></i>
+                <h3><%= (stats.totalTransfers || 0).toFixed(2) %></h3>
+                <p class="mb-0">Total Transfers</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-3">
+        <div class="card bg-danger text-white shadow-sm">
+            <div class="card-body text-center">
+                <i class="bi bi-fire fs-1 mb-2"></i>
+                <h3><%= (stats.totalBurns || 0).toFixed(2) %></h3>
+                <p class="mb-0">Total Burns</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-8 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-graph-up"></i> Transaction Trends (Last 7 Days)</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="dashboardChart" height="80"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Transaction Types</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="typeChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent Transactions</h5>
+                <a href="/transactions" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                <% if (recentTransactions.length === 0) { %>
+                    <p class="text-muted text-center py-4">No transactions yet</p>
+                <% } else { %>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Description</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% recentTransactions.forEach(tx => { %>
+                                    <tr>
+                                        <td>
+                                            <span class="badge bg-<%= tx.type === 'deposit' || (tx.type === 'transfer' && tx.amount > 0) ? 'success' : 'danger' %>">
+                                                <%= tx.type %>
+                                            </span>
+                                        </td>
+                                        <td class="<%= tx.amount > 0 ? 'text-success fw-bold' : 'text-danger fw-bold' %>">
+                                            <%= tx.amount > 0 ? '+' : '' %><%= tx.amount.toFixed(2) %>
+                                        </td>
+                                        <td><%= tx.description %></td>
+                                        <td><small><%= tx.timestamp.toLocaleString() %></small></td>
+                                        <td>
+                                            <span class="badge bg-<%= tx.status === 'completed' ? 'success' : 'warning' %>">
+                                                <%= tx.status %>
+                                            </span>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm mb-3">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-lightning-charge"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="/tokens" class="btn btn-primary">
+                        <i class="bi bi-wallet2"></i> Manage Tokens
+                    </a>
+                    <a href="/transactions" class="btn btn-outline-primary">
+                        <i class="bi bi-list-ul"></i> View Transactions
+                    </a>
+                    <a href="/reports" class="btn btn-outline-primary">
+                        <i class="bi bi-graph-up"></i> View Reports
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Account Summary</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <small class="text-muted">Net Amount</small>
+                    <h4 class="<%= stats.netAmount >= 0 ? 'text-success' : 'text-danger' %>">
+                        <%= stats.netAmount >= 0 ? '+' : '' %><%= stats.netAmount.toFixed(2) %>
+                    </h4>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Deposits:</span>
+                    <strong class="text-success"><%= stats.totalDeposits.toFixed(2) %></strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Withdrawals:</span>
+                    <strong class="text-danger"><%= stats.totalWithdrawals.toFixed(2) %></strong>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span class="text-muted">Transfers:</span>
+                    <strong><%= stats.totalTransfers.toFixed(2) %></strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    // Dashboard Line Chart
+    const dailyData = <%- dailyData %>;
+    const dates = Object.keys(dailyData).sort();
+    const formattedDates = dates.map(date => {
+        const d = new Date(date);
+        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    });
+    
+    const deposits = dates.map(date => dailyData[date].deposits);
+    const withdrawals = dates.map(date => Math.abs(dailyData[date].withdrawals));
+    const transfers = dates.map(date => dailyData[date].transfers);
+    const burns = dates.map(date => Math.abs(dailyData[date].burns));
+
+    const ctx1 = document.getElementById('dashboardChart').getContext('2d');
+    new Chart(ctx1, {
+        type: 'line',
+        data: {
+            labels: formattedDates,
+            datasets: [
+                {
+                    label: 'Deposits',
+                    data: deposits,
+                    borderColor: 'rgb(25, 135, 84)',
+                    backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                },
+                {
+                    label: 'Withdrawals',
+                    data: withdrawals,
+                    borderColor: 'rgb(255, 193, 7)',
+                    backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                },
+                {
+                    label: 'Transfers',
+                    data: transfers,
+                    borderColor: 'rgb(13, 110, 253)',
+                    backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                },
+                {
+                    label: 'Burns',
+                    data: burns,
+                    borderColor: 'rgb(220, 53, 69)',
+                    backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return value.toFixed(2);
+                        }
+                    }
+                }
+            },
+            interaction: {
+                mode: 'nearest',
+                axis: 'x',
+                intersect: false
+            }
+        }
+    });
+
+    // Transaction Type Pie Chart
+    const typeDistribution = <%- typeDistribution %>;
+    const ctx2 = document.getElementById('typeChart').getContext('2d');
+    new Chart(ctx2, {
+        type: 'doughnut',
+        data: {
+            labels: ['Deposits', 'Withdrawals', 'Transfers', 'Burns'],
+            datasets: [{
+                data: [
+                    typeDistribution.deposit || 0,
+                    typeDistribution.withdrawal || 0,
+                    typeDistribution.transfer || 0,
+                    typeDistribution.burn || 0
+                ],
+                backgroundColor: [
+                    'rgba(25, 135, 84, 0.8)',
+                    'rgba(255, 193, 7, 0.8)',
+                    'rgba(13, 110, 253, 0.8)',
+                    'rgba(220, 53, 69, 0.8)'
+                ],
+                borderColor: [
+                    'rgb(25, 135, 84)',
+                    'rgb(255, 193, 7)',
+                    'rgb(13, 110, 253)',
+                    'rgb(220, 53, 69)'
+                ],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            label += context.parsed.toFixed(2);
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Real-time balance update (polling every 5 seconds)
+    setInterval(async () => {
+        try {
+            const response = await fetch('/dashboard');
+            if (response.ok) {
+                // Balance will update on next page load
+                // For real-time, you'd use Firestore listeners
+            }
+        } catch (error) {
+            console.error('Balance update error:', error);
+        }
+    }, 5000);
+</script>
+
+<%- include('../partials/footer') %>
+

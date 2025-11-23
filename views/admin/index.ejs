@@ -1,0 +1,201 @@
+<%- include('../partials/header', { title: title, user: user }) %>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="mb-0"><i class="bi bi-shield-check"></i> Admin Panel</h1>
+        <p class="text-muted">Manage users and transactions</p>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4 mb-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <i class="bi bi-people fs-1 mb-2"></i>
+                <h3><%= stats.totalUsers %></h3>
+                <p class="mb-0">Total Users</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <i class="bi bi-wallet2 fs-1 mb-2"></i>
+                <h3><%= stats.totalBalance %></h3>
+                <p class="mb-0">Total Balance</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <i class="bi bi-list-ul fs-1 mb-2"></i>
+                <h3><%= stats.totalTransactions %></h3>
+                <p class="mb-0">Total Transactions</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-people"></i> All Users</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>User ID</th>
+                                <th>Email</th>
+                                <th>Name</th>
+                                <th>Balance</th>
+                                <th>Is Admin</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% users.forEach(user => { %>
+                                <tr>
+                                    <td><code><%= user.id %></code></td>
+                                    <td><%= user.email %></td>
+                                    <td><%= user.name || '-' %></td>
+                                    <td class="fw-bold"><%= user.balance || 0 %></td>
+                                    <td>
+                                        <% if (user.isAdmin) { %>
+                                            <span class="badge bg-danger">Admin</span>
+                                        <% } else { %>
+                                            <span class="badge bg-secondary">User</span>
+                                        <% } %>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-warning" onclick="openResetModal('<%= user.id %>', '<%= user.email %>', <%= user.balance || 0 %>)">
+                                            <i class="bi bi-arrow-clockwise"></i> Reset Balance
+                                        </button>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-list-ul"></i> Recent Transactions</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Transaction ID</th>
+                                <th>User ID</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Description</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% transactions.forEach(tx => { %>
+                                <tr>
+                                    <td><code><%= tx.transactionId || tx.id %></code></td>
+                                    <td><code><%= tx.userId %></code></td>
+                                    <td>
+                                        <span class="badge bg-<%= tx.type === 'deposit' || (tx.type === 'transfer' && tx.amount > 0) ? 'success' : 'danger' %>">
+                                            <%= tx.type %>
+                                        </span>
+                                    </td>
+                                    <td class="<%= tx.amount > 0 ? 'text-success' : 'text-danger' %>">
+                                        <%= tx.amount > 0 ? '+' : '' %><%= tx.amount %>
+                                    </td>
+                                    <td><%= tx.description %></td>
+                                    <td><%= tx.timestamp.toLocaleString() %></td>
+                                    <td>
+                                        <span class="badge bg-<%= tx.status === 'completed' ? 'success' : 'warning' %>">
+                                            <%= tx.status %>
+                                        </span>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-send"></i> Token Distribution</h5>
+            </div>
+            <div class="card-body">
+                <form id="distributeForm">
+                    <div class="mb-3">
+                        <label for="distributeUserIds" class="form-label">User IDs (comma-separated)</label>
+                        <textarea class="form-control" id="distributeUserIds" name="userIds" rows="3" placeholder="user1, user2, user3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="distributeAmount" class="form-label">Amount per User</label>
+                        <input type="number" class="form-control" id="distributeAmount" name="amount" step="0.01" min="0.01" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-send"></i> Distribute Tokens
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reset Balance Modal -->
+<div class="modal fade" id="resetModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Reset User Balance</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="resetForm">
+                <div class="modal-body">
+                    <input type="hidden" id="resetUserId" name="userId">
+                    <div class="mb-3">
+                        <label class="form-label">User Email</label>
+                        <input type="text" class="form-control" id="resetUserEmail" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Current Balance</label>
+                        <input type="text" class="form-control" id="resetCurrentBalance" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="resetNewBalance" class="form-label">New Balance</label>
+                        <input type="number" class="form-control" id="resetNewBalance" name="newBalance" step="0.01" min="0" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning">Reset Balance</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="alertContainer"></div>
+
+<%- include('../partials/footer') %>
+
+<script src="/js/admin.js"></script>
+

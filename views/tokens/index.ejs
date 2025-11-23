@@ -1,0 +1,148 @@
+<%- include('../partials/header', { title: title, user: user }) %>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="mb-0">Token Management</h1>
+        <p class="text-muted">Manage your tokens</p>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <i class="bi bi-wallet2 fs-1 mb-3"></i>
+                <h3 id="currentBalance"><%= user.balance || 0 %></h3>
+                <p class="mb-0">Current Balance</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs" id="tokenTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="transfer-tab" data-bs-toggle="tab" data-bs-target="#transfer" type="button">
+                            <i class="bi bi-arrow-left-right"></i> Transfer
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="deposit-tab" data-bs-toggle="tab" data-bs-target="#deposit" type="button">
+                            <i class="bi bi-arrow-down-circle"></i> Deposit
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="withdraw-tab" data-bs-toggle="tab" data-bs-target="#withdraw" type="button">
+                            <i class="bi bi-arrow-up-circle"></i> Withdraw
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="burn-tab" data-bs-toggle="tab" data-bs-target="#burn" type="button">
+                            <i class="bi bi-fire"></i> Burn
+                        </button>
+                    </li>
+                    <% if (user.isAdmin) { %>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="create-tab" data-bs-toggle="tab" data-bs-target="#create" type="button">
+                            <i class="bi bi-plus-circle"></i> Create (Admin)
+                        </button>
+                    </li>
+                    <% } %>
+                </ul>
+            </div>
+            <div class="card-body">
+                <div class="tab-content" id="tokenTabsContent">
+                    <!-- Transfer Tab -->
+                    <div class="tab-pane fade show active" id="transfer" role="tabpanel">
+                        <form id="transferForm">
+                            <div class="mb-3">
+                                <label for="recipientEmail" class="form-label">Recipient Email</label>
+                                <input type="email" class="form-control" id="recipientEmail" name="recipientEmail" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="transferAmount" class="form-label">Amount</label>
+                                <input type="number" class="form-control" id="transferAmount" name="amount" step="0.01" min="0.01" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="transferDescription" class="form-label">Description (Optional)</label>
+                                <input type="text" class="form-control" id="transferDescription" name="description">
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-arrow-left-right"></i> Transfer Tokens
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Deposit Tab -->
+                    <div class="tab-pane fade" id="deposit" role="tabpanel">
+                        <form id="depositForm">
+                            <div class="mb-3">
+                                <label for="depositAmount" class="form-label">Amount</label>
+                                <input type="number" class="form-control" id="depositAmount" name="amount" step="0.01" min="0.01" required>
+                            </div>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-arrow-down-circle"></i> Deposit Tokens
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Withdraw Tab -->
+                    <div class="tab-pane fade" id="withdraw" role="tabpanel">
+                        <form id="withdrawForm">
+                            <div class="mb-3">
+                                <label for="withdrawAmount" class="form-label">Amount</label>
+                                <input type="number" class="form-control" id="withdrawAmount" name="amount" step="0.01" min="0.01" required>
+                            </div>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="bi bi-arrow-up-circle"></i> Withdraw Tokens
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Burn Tab -->
+                    <div class="tab-pane fade" id="burn" role="tabpanel">
+                        <form id="burnForm">
+                            <div class="mb-3">
+                                <label for="burnAmount" class="form-label">Amount to Burn</label>
+                                <input type="number" class="form-control" id="burnAmount" name="amount" step="0.01" min="0.01" required>
+                                <div class="form-text">Warning: Burning tokens permanently removes them from your balance.</div>
+                            </div>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-fire"></i> Burn Tokens
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Create Tab (Admin Only) -->
+                    <% if (user.isAdmin) { %>
+                    <div class="tab-pane fade" id="create" role="tabpanel">
+                        <form id="createForm">
+                            <div class="mb-3">
+                                <label for="createUserId" class="form-label">User ID (Leave empty for yourself)</label>
+                                <input type="text" class="form-control" id="createUserId" name="userId" placeholder="Optional">
+                            </div>
+                            <div class="mb-3">
+                                <label for="createAmount" class="form-label">Amount</label>
+                                <input type="number" class="form-control" id="createAmount" name="amount" step="0.01" min="0.01" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-plus-circle"></i> Create Tokens
+                            </button>
+                        </form>
+                    </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="alertContainer"></div>
+
+<%- include('../partials/footer') %>
+
+<script src="/js/tokens.js"></script>
+
