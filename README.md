@@ -161,4 +161,4 @@ For issues and questions, please open an issue on GitHub.
 
 ---
 
-**Built with ❤️ using EJS + Node.js + Express + MongoDB**
+**Built using EJS + Node.js + Express + MongoDB**
