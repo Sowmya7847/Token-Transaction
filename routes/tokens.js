@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const { requireAuth } = require('../middleware/auth');
 const User = require('../models/User');
 const { createTransaction } = require('../controllers/transactionController');
@@ -84,12 +85,11 @@ router.post('/transfer', requireAuth, async (req, res) => {
       return res.status(400).json({ error: 'Cannot transfer to yourself' });
     }
 
-    // Get sender and recipient
+    // Get sender
     const sender = await User.findById(req.user.uid);
-    const recipient = await User.findById(recipientId);
 
-    if (!sender || !recipient) {
-      return res.status(404).json({ error: 'User not found' });
+    if (!sender) {
+      return res.status(404).json({ error: 'Sender not found' });
     }
 
     if (sender.balance < tokenAmount) {
@@ -97,7 +97,7 @@ router.post('/transfer', requireAuth, async (req, res) => {
     }
 
     // Perform transfer using MongoDB transaction
-    const session = await User.startSession();
+    const session = await mongoose.startSession();
     try {
       await session.withTransaction(async () => {
         await User.findByIdAndUpdate(req.user.uid, {

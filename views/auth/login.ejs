@@ -16,14 +16,22 @@
                     </div>
                 <% } %>
 
-                <form action="/login" method="POST">
+                <form action="/login" method="POST" id="loginForm">
                     <div class="mb-3">
-                        <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="email" name="email" required autofocus>
+                        <label for="email" class="form-label">
+                            Email Address
+                            <i class="bi bi-question-circle help-icon" data-bs-toggle="tooltip" title="Enter the email address you used to register"></i>
+                        </label>
+                        <input type="email" class="form-control" id="email" name="email" placeholder="your.email@example.com" required autofocus>
+                        <div class="form-help-text">Enter your registered email address</div>
                     </div>
                     <div class="mb-3">
-                        <label for="password" class="form-label">Password</label>
-                        <input type="password" class="form-control" id="password" name="password" required>
+                        <label for="password" class="form-label">
+                            Password
+                            <i class="bi bi-question-circle help-icon" data-bs-toggle="tooltip" title="Enter your account password"></i>
+                        </label>
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
+                        <div class="form-help-text">Minimum 6 characters</div>
                     </div>
                     <button type="submit" class="btn btn-primary w-100 mb-3">
                         <i class="bi bi-box-arrow-in-right"></i> Login

@@ -39,6 +39,7 @@ router.get('/', requireAdmin, async (req, res) => {
 
     res.render('admin/index', {
       title: 'Admin Panel',
+      user: req.user,
       users: formattedUsers,
       transactions: formattedTransactions,
       stats: {

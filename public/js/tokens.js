@@ -7,12 +7,39 @@ document.addEventListener('DOMContentLoaded', function() {
     const burnForm = document.getElementById('burnForm');
     const createForm = document.getElementById('createForm');
 
-    // Transfer form handler
+    // Transfer form handler with enhanced validation
     if (transferForm) {
         transferForm.addEventListener('submit', async function(e) {
             e.preventDefault();
+            
+            // Validate form before submission
+            if (!validateTransferForm(transferForm)) {
+                return;
+            }
+            
             const formData = new FormData(transferForm);
             const data = Object.fromEntries(formData);
+            
+            // Show confirmation for transfers
+            const confirmed = await new Promise((resolve) => {
+                if (window.showConfirmationDialog) {
+                    showConfirmationDialog(
+                        'Confirm Transfer',
+                        `You are about to transfer ${data.amount} tokens to ${data.recipientEmail}. Are you sure?`,
+                        () => resolve(true),
+                        () => resolve(false)
+                    );
+                } else {
+                    resolve(confirm(`Transfer ${data.amount} tokens to ${data.recipientEmail}?`));
+                }
+            });
+            
+            if (!confirmed) return;
+
+            const submitBtn = transferForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
 
             try {
                 const response = await fetch('/tokens/transfer', {
@@ -28,20 +55,46 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (response.ok) {
                     showAlert(result.message || 'Transfer completed successfully!', 'success');
                     transferForm.reset();
-                    updateBalance();
+                    setTimeout(() => updateBalance(), 500);
                 } else {
-                    showAlert(result.error || 'Transfer failed', 'danger');
+                    showAlert(result.error || 'Transfer failed. Please check the recipient email and your balance.', 'danger', 7000);
                 }
             } catch (error) {
-                showAlert('An error occurred. Please try again.', 'danger');
+                showAlert('Network error. Please check your connection and try again.', 'danger', 7000);
             } finally {
-                const submitBtn = transferForm.querySelector('button[type="submit"]');
-                if (submitBtn) {
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = '<i class="bi bi-arrow-left-right"></i> Transfer Tokens';
-                }
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
             }
         });
+    }
+    
+    // Validate transfer form
+    function validateTransferForm(form) {
+        const email = form.querySelector('#recipientEmail').value.trim();
+        const amount = parseFloat(form.querySelector('#transferAmount').value);
+        const balance = parseFloat(document.getElementById('currentBalance').textContent) || 0;
+        
+        if (!email) {
+            showAlert('Please enter recipient email address', 'warning');
+            return false;
+        }
+        
+        if (!email.includes('@')) {
+            showAlert('Please enter a valid email address', 'warning');
+            return false;
+        }
+        
+        if (!amount || amount <= 0) {
+            showAlert('Please enter a valid amount greater than 0', 'warning');
+            return false;
+        }
+        
+        if (amount > balance) {
+            showAlert(`Insufficient balance. You have ${balance.toFixed(2)} tokens available.`, 'danger');
+            return false;
+        }
+        
+        return true;
     }
 
     // Deposit form handler
@@ -125,8 +178,21 @@ document.addEventListener('DOMContentLoaded', function() {
             const formData = new FormData(burnForm);
             const data = Object.fromEntries(formData);
 
-            if (!confirm('Are you sure you want to burn these tokens? This action cannot be undone.')) {
-                return;
+            // Enhanced confirmation dialog
+            if (window.showConfirmationDialog) {
+                const confirmed = await new Promise((resolve) => {
+                    showConfirmationDialog(
+                        'Confirm Token Burn',
+                        `Are you sure you want to burn ${data.amount} tokens? This action cannot be undone and the tokens will be permanently removed from your account.`,
+                        () => resolve(true),
+                        () => resolve(false)
+                    );
+                });
+                if (!confirmed) return;
+            } else {
+                if (!confirm('Are you sure you want to burn these tokens? This action cannot be undone.')) {
+                    return;
+                }
             }
 
             try {

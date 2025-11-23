@@ -2,9 +2,26 @@
 
 <div class="row mb-4">
     <div class="col-12">
-        <h1 class="mb-0">Token Management</h1>
-        <p class="text-muted">Manage your tokens</p>
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="mb-0">Token Management</h1>
+                <p class="text-muted">Manage your tokens - deposit, withdraw, transfer, or burn</p>
+            </div>
+            <button class="btn btn-outline-primary btn-sm" onclick="showHelp('tokens')" data-bs-toggle="tooltip" title="Get help with token management">
+                <i class="bi bi-question-circle"></i> Help
+            </button>
+        </div>
     </div>
+</div>
+
+<div class="guide-panel fade-in">
+    <h6><i class="bi bi-lightbulb"></i> Quick Guide</h6>
+    <ul>
+        <li><strong>Transfer:</strong> Send tokens to another user by entering their email address</li>
+        <li><strong>Deposit:</strong> Add tokens to your account balance</li>
+        <li><strong>Withdraw:</strong> Remove tokens from your account</li>
+        <li><strong>Burn:</strong> Permanently destroy tokens (this action cannot be undone!)</li>
+    </ul>
 </div>
 
 <div class="row mb-4">
@@ -57,18 +74,30 @@
                 <div class="tab-content" id="tokenTabsContent">
                     <!-- Transfer Tab -->
                     <div class="tab-pane fade show active" id="transfer" role="tabpanel">
+                        <div class="info-badge mb-3">
+                            <i class="bi bi-info-circle"></i> <strong>Tip:</strong> Make sure you have the correct email address of the recipient. Transfers cannot be reversed.
+                        </div>
                         <form id="transferForm">
                             <div class="mb-3">
-                                <label for="recipientEmail" class="form-label">Recipient Email</label>
-                                <input type="email" class="form-control" id="recipientEmail" name="recipientEmail" required>
+                                <label for="recipientEmail" class="form-label">
+                                    Recipient Email 
+                                    <i class="bi bi-question-circle help-icon" data-bs-toggle="tooltip" title="Enter the email address of the user you want to send tokens to"></i>
+                                </label>
+                                <input type="email" class="form-control" id="recipientEmail" name="recipientEmail" placeholder="user@example.com" required>
+                                <div class="form-help-text">Enter the exact email address registered in the system</div>
                             </div>
                             <div class="mb-3">
-                                <label for="transferAmount" class="form-label">Amount</label>
-                                <input type="number" class="form-control" id="transferAmount" name="amount" step="0.01" min="0.01" required>
+                                <label for="transferAmount" class="form-label">
+                                    Amount 
+                                    <i class="bi bi-question-circle help-icon" data-bs-toggle="tooltip" title="Enter the number of tokens to transfer"></i>
+                                </label>
+                                <input type="number" class="form-control" id="transferAmount" name="amount" step="0.01" min="0.01" placeholder="0.00" required>
+                                <div class="form-help-text">Minimum: 0.01 tokens. You can transfer up to your current balance: <strong><%= (user.balance || 0).toFixed(2) %></strong></div>
                             </div>
                             <div class="mb-3">
                                 <label for="transferDescription" class="form-label">Description (Optional)</label>
-                                <input type="text" class="form-control" id="transferDescription" name="description">
+                                <input type="text" class="form-control" id="transferDescription" name="description" placeholder="e.g., Payment for services">
+                                <div class="form-help-text">Add a note to help you remember this transaction</div>
                             </div>
                             <button type="submit" class="btn btn-primary">
                                 <i class="bi bi-arrow-left-right"></i> Transfer Tokens
@@ -78,10 +107,17 @@
 
                     <!-- Deposit Tab -->
                     <div class="tab-pane fade" id="deposit" role="tabpanel">
+                        <div class="info-badge mb-3">
+                            <i class="bi bi-info-circle"></i> <strong>Deposit:</strong> Add tokens to your account. Your balance will increase immediately.
+                        </div>
                         <form id="depositForm">
                             <div class="mb-3">
-                                <label for="depositAmount" class="form-label">Amount</label>
-                                <input type="number" class="form-control" id="depositAmount" name="amount" step="0.01" min="0.01" required>
+                                <label for="depositAmount" class="form-label">
+                                    Amount to Deposit 
+                                    <i class="bi bi-question-circle help-icon" data-bs-toggle="tooltip" title="Enter the number of tokens you want to add to your account"></i>
+                                </label>
+                                <input type="number" class="form-control" id="depositAmount" name="amount" step="0.01" min="0.01" placeholder="0.00" required>
+                                <div class="form-help-text">Minimum deposit: 0.01 tokens</div>
                             </div>
                             <button type="submit" class="btn btn-success">
                                 <i class="bi bi-arrow-down-circle"></i> Deposit Tokens
@@ -91,10 +127,17 @@
 
                     <!-- Withdraw Tab -->
                     <div class="tab-pane fade" id="withdraw" role="tabpanel">
+                        <div class="info-badge mb-3">
+                            <i class="bi bi-info-circle"></i> <strong>Withdraw:</strong> Remove tokens from your account. Make sure you have sufficient balance.
+                        </div>
                         <form id="withdrawForm">
                             <div class="mb-3">
-                                <label for="withdrawAmount" class="form-label">Amount</label>
-                                <input type="number" class="form-control" id="withdrawAmount" name="amount" step="0.01" min="0.01" required>
+                                <label for="withdrawAmount" class="form-label">
+                                    Amount to Withdraw 
+                                    <i class="bi bi-question-circle help-icon" data-bs-toggle="tooltip" title="Enter the number of tokens you want to remove from your account"></i>
+                                </label>
+                                <input type="number" class="form-control" id="withdrawAmount" name="amount" step="0.01" min="0.01" placeholder="0.00" required>
+                                <div class="form-help-text">Available balance: <strong><%= (user.balance || 0).toFixed(2) %></strong> tokens</div>
                             </div>
                             <button type="submit" class="btn btn-warning">
                                 <i class="bi bi-arrow-up-circle"></i> Withdraw Tokens
@@ -104,11 +147,17 @@
 
                     <!-- Burn Tab -->
                     <div class="tab-pane fade" id="burn" role="tabpanel">
+                        <div class="alert alert-warning mb-3">
+                            <i class="bi bi-exclamation-triangle"></i> <strong>Warning:</strong> Burning tokens permanently removes them from your account. This action cannot be undone!
+                        </div>
                         <form id="burnForm">
                             <div class="mb-3">
-                                <label for="burnAmount" class="form-label">Amount to Burn</label>
-                                <input type="number" class="form-control" id="burnAmount" name="amount" step="0.01" min="0.01" required>
-                                <div class="form-text">Warning: Burning tokens permanently removes them from your balance.</div>
+                                <label for="burnAmount" class="form-label">
+                                    Amount to Burn 
+                                    <i class="bi bi-question-circle help-icon" data-bs-toggle="tooltip" title="Enter the number of tokens you want to permanently destroy"></i>
+                                </label>
+                                <input type="number" class="form-control" id="burnAmount" name="amount" step="0.01" min="0.01" placeholder="0.00" required>
+                                <div class="form-help-text">Available balance: <strong><%= (user.balance || 0).toFixed(2) %></strong> tokens</div>
                             </div>
                             <button type="submit" class="btn btn-danger">
                                 <i class="bi bi-fire"></i> Burn Tokens
@@ -140,7 +189,7 @@
     </div>
 </div>
 
-<div id="alertContainer"></div>
+<div id="alertContainer" style="position: fixed; top: 20px; right: 20px; z-index: 10000; max-width: 400px;"></div>
 
 <%- include('../partials/footer') %>
 

@@ -30,6 +30,7 @@ router.get('/', requireAuth, async (req, res) => {
 
     res.render('transactions/index', {
       title: 'Transaction History',
+      user: req.user,
       transactions: formattedTransactions,
       currentPage: page,
       totalPages,

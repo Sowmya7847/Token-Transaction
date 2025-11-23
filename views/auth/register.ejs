@@ -16,21 +16,37 @@
                     </div>
                 <% } %>
 
-                <form action="/register" method="POST">
+                <div class="info-badge mb-3">
+                    <i class="bi bi-info-circle"></i> <strong>New User?</strong> Create an account to start managing tokens. It only takes a minute!
+                </div>
+                
+                <form action="/register" method="POST" id="registerForm">
                     <div class="mb-3">
-                        <label for="name" class="form-label">Name</label>
-                        <input type="text" class="form-control" id="name" name="name" required>
+                        <label for="name" class="form-label">
+                            Full Name
+                            <i class="bi bi-question-circle help-icon" data-bs-toggle="tooltip" title="Enter your full name"></i>
+                        </label>
+                        <input type="text" class="form-control" id="name" name="name" placeholder="John Doe" required>
+                        <div class="form-help-text">This will be displayed on your profile</div>
                     </div>
                     <div class="mb-3">
-                        <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="email" name="email" required>
+                        <label for="email" class="form-label">
+                            Email Address
+                            <i class="bi bi-question-circle help-icon" data-bs-toggle="tooltip" title="Enter a valid email address for your account"></i>
+                        </label>
+                        <input type="email" class="form-control" id="email" name="email" placeholder="your.email@example.com" required>
+                        <div class="form-help-text">You'll use this email to login</div>
                     </div>
                     <div class="mb-3">
-                        <label for="password" class="form-label">Password</label>
-                        <input type="password" class="form-control" id="password" name="password" required minlength="6">
+                        <label for="password" class="form-label">
+                            Password
+                            <i class="bi bi-question-circle help-icon" data-bs-toggle="tooltip" title="Create a strong password (at least 6 characters)"></i>
+                        </label>
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Create a password" required minlength="6">
+                        <div class="form-help-text">Minimum 6 characters. Choose a strong password for security.</div>
                     </div>
                     <button type="submit" class="btn btn-primary w-100 mb-3">
-                        <i class="bi bi-person-plus"></i> Register
+                        <i class="bi bi-person-plus"></i> Create Account
                     </button>
                 </form>
 

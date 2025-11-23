@@ -67,6 +67,7 @@ router.get('/', requireAuth, async (req, res) => {
 
     res.render('reports/index', {
       title: 'Reports & Analytics',
+      user: req.user,
       stats,
       dailyData: JSON.stringify(dailyData)
     });

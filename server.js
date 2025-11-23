@@ -39,6 +39,17 @@ app.use('/tokens', require('./routes/tokens'));
 app.use('/transactions', require('./routes/transactions'));
 app.use('/reports', require('./routes/reports'));
 app.use('/admin', require('./routes/admin'));
+app.use('/contact', require('./routes/contact'));
+
+// Debug: Log all registered routes
+console.log('✅ Routes registered:');
+console.log('   - / (auth routes)');
+console.log('   - /dashboard');
+console.log('   - /tokens');
+console.log('   - /transactions');
+console.log('   - /reports');
+console.log('   - /admin');
+console.log('   - /contact');
 
 // Home route
 app.get('/', (req, res) => {
